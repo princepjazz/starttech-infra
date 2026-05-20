@@ -1,0 +1,19 @@
+
+
+# Error rate over time
+SOURCE '/starttech/backend'
+| filter @message like /ERROR/
+| stats count(*) as errors by bin(5m)
+
+# P99 response latency
+SOURCE '/starttech/backend'
+| filter @message like /duration/
+| parse @message "duration=* " as latency
+| stats pct(latency, 99) as p99 by bin(1m)
+
+# Top error messages
+SOURCE '/starttech/backend'
+| filter level = "ERROR"
+| stats count(*) as count by message
+| sort count desc
+| limit 20
